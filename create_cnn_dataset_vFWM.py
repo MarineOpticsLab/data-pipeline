@@ -56,7 +56,6 @@ def _():
         cv2,
         display,
         gvs,
-        list_containers_in_blob,
         list_files_in_blob,
         load_local_model,
         np,
@@ -90,6 +89,7 @@ def _(display, folder_location_selectbox, mo):
         display(mo.md(f"""__Select your root folder:__  
         This should be the `ml` folder that contains folders of images.  
         {filepath_form}"""))
+
     return (filepath_form,)
 
 
@@ -101,21 +101,6 @@ def _(display, folder_location_selectbox, mo):
         This will be used to name the final `.csv` file.  
         {dataset_name_form}"""))
     return (dataset_name_form,)
-
-
-@app.cell
-def _(display, folder_location_selectbox, gvs, list_containers_in_blob, mo):
-    if folder_location_selectbox.value == 'cloud':
-        cstr = gvs.config_info['connection_string']
-        # retrieve list of blob containers
-        blob_containers = list_containers_in_blob(connection_string=cstr)
-
-        # make a drop-down form to select the container
-        container_form = mo.ui.dropdown(blob_containers)
-
-        display(mo.md(f"""__Select your blob container:__  
-        {container_form}"""))
-    return container_form, cstr
 
 
 @app.cell
@@ -474,28 +459,6 @@ def _(
 
         # concatenate all of the subset dataframes
         test_eval = pd.concat(test_preds)
-    return (test_eval,)
-
-
-@app.cell
-def _(
-    container_form,
-    dataset_name_form,
-    display,
-    folder_location,
-    folder_location_selectbox,
-    test_eval,
-):
-    # save the final dataframe as a csv to the local machine
-    if folder_location_selectbox.value == 'cloud':
-        test_eval.to_csv(f"{container_form.value}_prediction_results.csv")
-        display(test_eval.head())
-    elif folder_location_selectbox.value == 'local':
-        if dataset_name_form.value is None:
-            print("ACTION REQUIRED: Enter dataset name")
-        else:
-            test_eval.to_csv(f"{folder_location}\\{dataset_name_form.value}_prediction_results.csv")
-            display(test_eval.head())
     return
 
 
